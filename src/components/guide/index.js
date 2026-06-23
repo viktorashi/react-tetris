@@ -1,39 +1,29 @@
 import React from 'react';
-import QRCode from 'qrcode';
+import QRCodeLib from 'qrcode';
 import style from './index.less';
 import { transform, i18n, lan } from '../../unit/const';
-import { isMobile } from '../../unit';
+import { isMobile as checkIsMobile } from '../../unit';
 
 
-export default class Guide extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      isMobile: isMobile(),
-      QRCode: '',
-    };
-  }
-  componentWillMount() {
-    if (this.state.isMobile) {
+export default function Guide() {
+  const [isMobileState] = React.useState(checkIsMobile());
+  const [qrCodeData, setQrCodeData] = React.useState('');
+
+  React.useEffect(() => {
+    if (isMobileState) {
       return;
     }
-    QRCode.toDataURL(location.href, { margin: 1 })
-        .then(dataUrl => this.setState({ QRCode: dataUrl }));
-  }
-  shouldComponentUpdate(state) {
-    if (state.QRCode === this.state.QRCode) {
-      return false;
-    }
-    return true;
-  }
-  render() {
-    if (this.state.isMobile) {
-      return (
-        null
-      );
-    }
+    QRCodeLib.toDataURL(location.href, { margin: 1 })
+      .then(dataUrl => setQrCodeData(dataUrl));
+  }, [isMobileState]);
+
+  if (isMobileState) {
     return (
-      <div style={{ display: this.state.isMobile ? 'none' : 'block' }}>
+      null
+    );
+  }
+  return (
+      <div style={{ display: isMobileState ? 'none' : 'block' }}>
         <div className={`${style.guide} ${style.right}`}>
           <div className={style.up}>
             <em style={{ [transform]: 'translate(0,-3px) scale(1,2)' }} />
@@ -70,16 +60,15 @@ export default class Guide extends React.Component {
           </p>
           <div className={style.space}>SPACE</div>
         </div>
-        { this.state.QRCode !== '' ? (
+        { qrCodeData !== '' ? (
           <div className={`${style.guide} ${style.qr}`}>
             <img
-              src={this.state.QRCode}
+              src={qrCodeData}
               alt={i18n.QRCode[lan]}
             />
           </div>
         ) : null }
       </div>
     );
-  }
 }
 

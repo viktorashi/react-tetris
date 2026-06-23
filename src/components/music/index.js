@@ -4,23 +4,18 @@ import propTypes from 'prop-types';
 
 import style from './index.less';
 
-export default class Music extends React.Component {
-  shouldComponentUpdate({ data }) {
-    return data !== this.props.data;
-  }
-  render() {
-    return (
-      <div
-        className={cn(
-          {
-            bg: true,
-            [style.music]: true,
-            [style.c]: !this.props.data,
-          }
-        )}
-      />
-    );
-  }
+export default function Music({ data }) {
+  return (
+    <div
+      className={cn(
+        {
+          bg: true,
+          [style.music]: true,
+          [style.c]: !data,
+        }
+      )}
+    />
+  );
 }
 
 Music.propTypes = {
