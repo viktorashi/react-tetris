@@ -5,39 +5,18 @@ import propTypes from 'prop-types';
 import style from './index.less';
 import { i18n, lan } from '../../unit/const';
 
-export default class Logo extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      style: style.r1,
-      display: 'none',
-    };
-  }
-  componentWillMount() {
-    this.animate(this.props);
-  }
-  componentWillReceiveProps(nextProps) {
-    if ( // 只有在游戏进入开始, 或结束时 触发改变
-      (
-        [this.props.cur, nextProps.cur].indexOf(false) !== -1 &&
-        (this.props.cur !== nextProps.cur)
-      ) ||
-      (this.props.reset !== nextProps.reset)
-    ) {
-      this.animate(nextProps);
-    }
-  }
-  shouldComponentUpdate({ cur, reset }) {
-    return cur !== this.props.cur || reset !== this.props.reset || !cur;
-  }
-  animate({ cur, reset }) {
-    clearTimeout(Logo.timeout);
-    this.setState({
-      style: style.r1,
-      display: 'none',
-    });
-    if (cur || reset) {
-      this.setState({ display: 'none' });
+export default function Logo({ cur, reset }) {
+  const [styleKey, setStyleKey] = React.useState('r1');
+  const [displayMode, setDisplayMode] = React.useState('none');
+  const timeoutRef = React.useRef(null);
+
+  function animate({ cur: curVal, reset: resetVal }) {
+    clearTimeout(timeoutRef.current);
+    setStyleKey('r1');
+    setDisplayMode('none');
+
+    if (curVal || resetVal) {
+      setDisplayMode('none');
       return;
     }
 
@@ -48,14 +27,12 @@ export default class Logo extends React.Component {
       if (!func) {
         return;
       }
-      Logo.timeout = setTimeout(func, delay);
+      timeoutRef.current = setTimeout(func, delay);
     };
 
     const show = (func) => { // 显示
       set(() => {
-        this.setState({
-          display: 'block',
-        });
+        setDisplayMode('block');
         if (func) {
           func();
         }
@@ -64,9 +41,7 @@ export default class Logo extends React.Component {
 
     const hide = (func) => { // 隐藏
       set(() => {
-        this.setState({
-          display: 'none',
-        });
+        setDisplayMode('none');
         if (func) {
           func();
         }
@@ -75,9 +50,9 @@ export default class Logo extends React.Component {
 
     const eyes = (func, delay1, delay2) => { // 龙在眨眼睛
       set(() => {
-        this.setState({ style: style[m + 2] });
+        setStyleKey(m + 2);
         set(() => {
-          this.setState({ style: style[m + 1] });
+          setStyleKey(m + 1);
           if (func) {
             func();
           }
@@ -87,9 +62,9 @@ export default class Logo extends React.Component {
 
     const run = (func) => { // 开始跑步啦！
       set(() => {
-        this.setState({ style: style[m + 4] });
+        setStyleKey(m + 4);
         set(() => {
-          this.setState({ style: style[m + 3] });
+          setStyleKey(m + 3);
           count++;
           if (count === 10 || count === 20 || count === 30) {
             m = m === 'r' ? 'l' : 'r';
@@ -98,7 +73,7 @@ export default class Logo extends React.Component {
             run(func);
             return;
           }
-          this.setState({ style: style[m + 1] });
+          setStyleKey(m + 1);
           if (func) {
             set(func, 4000);
           }
@@ -111,7 +86,7 @@ export default class Logo extends React.Component {
       eyes(() => {
         eyes(() => {
           eyes(() => {
-            this.setState({ style: style[m + 2] });
+            setStyleKey(m + 2);
             run(dra);
           }, 150, 150);
         }, 150, 150);
@@ -130,23 +105,34 @@ export default class Logo extends React.Component {
       });
     });
   }
-  render() {
-    if (this.props.cur) {
-      return null;
+
+  React.useEffect(() => {
+    animate({ cur, reset });
+  }, []);
+
+  React.useEffect(() => {
+    // Only animate on cur or reset changes
+    if ((
+      [cur, false].indexOf(false) !== -1 &&
+      cur !== undefined
+    ) ||
+    (reset !== undefined)) {
+      animate({ cur, reset });
     }
-    return (
-      <div className={style.logo} style={{ display: this.state.display }}>
-        <div className={cn({ bg: true, [style.dragon]: true, [this.state.style]: true })} />
-        <p dangerouslySetInnerHTML={{ __html: i18n.titleCenter[lan] }} />
-      </div>
-    );
+  }, [cur, reset]);
+
+  if (cur) {
+    return null;
   }
+  return (
+    <div className={style.logo} style={{ display: displayMode }}>
+      <div className={cn({ bg: true, [style.dragon]: true, [style[styleKey]]: true })} />
+      <p dangerouslySetInnerHTML={{ __html: i18n.titleCenter[lan] }} />
+    </div>
+  );
 }
 
 Logo.propTypes = {
   cur: propTypes.bool,
   reset: propTypes.bool.isRequired,
-};
-Logo.statics = {
-  timeout: null,
 };

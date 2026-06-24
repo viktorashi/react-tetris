@@ -8,64 +8,56 @@ const DF = i18n.point[lan];
 const ZDF = i18n.highestScore[lan];
 const SLDF = i18n.lastRound[lan];
 
-export default class Point extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      label: '',
-      number: 0,
-    };
-  }
-  componentWillMount() {
-    this.onChange(this.props);
-  }
-  componentWillReceiveProps(nextProps) {
-    this.onChange(nextProps);
-  }
-  shouldComponentUpdate({ cur, point, max }) {
-    const props = this.props;
-    return cur !== props.cur || point !== props.point || max !== props.max || !props.cur;
-  }
-  onChange({ cur, point, max }) {
-    clearInterval(Point.timeout);
-    if (cur) { // 在游戏进行中
-      this.setState({
-        label: point >= max ? ZDF : DF,
-        number: point,
-      });
+export default function Point({ cur, point, max }) {
+  const [label, setLabel] = React.useState('');
+  const [number, setNumber] = React.useState(0);
+  const timeoutRef = React.useRef(null);
+
+  function onChange({ cur: curVal, point: pointVal, max: maxVal }) {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    if (curVal) { // 在游戏进行中
+      setLabel(pointVal >= maxVal ? ZDF : DF);
+      setNumber(pointVal);
     } else { // 游戏未开始
       const toggle = () => { // 最高分与上轮得分交替出现
-        this.setState({
-          label: SLDF,
-          number: point,
-        });
-        Point.timeout = setTimeout(() => {
-          this.setState({
-            label: ZDF,
-            number: max,
-          });
-          Point.timeout = setTimeout(toggle, 3000);
+        setLabel(SLDF);
+        setNumber(pointVal);
+        timeoutRef.current = setTimeout(() => {
+          setLabel(ZDF);
+          setNumber(maxVal);
+          timeoutRef.current = setTimeout(toggle, 3000);
         }, 3000);
       };
 
-      if (point !== 0) { // 如果为上轮没玩, 也不用提示了
+      if (pointVal !== 0) { // 如果为上轮没玩, 也不用提示了
         toggle();
       } else {
-        this.setState({
-          label: ZDF,
-          number: max,
-        });
+        setLabel(ZDF);
+        setNumber(maxVal);
       }
     }
   }
-  render() {
-    return (
-      <div>
-        <p>{ this.state.label }</p>
-        <Number number={this.state.number} />
-      </div>
-    );
-  }
+
+  React.useEffect(() => {
+    onChange({ cur, point, max });
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [cur, point, max]);
+
+  return (
+    <div>
+      <p>{ label }</p>
+      <Number number={number} />
+    </div>
+  );
 }
 
 Point.statics = {
@@ -77,4 +69,3 @@ Point.propTypes = {
   max: propTypes.number.isRequired,
   point: propTypes.number.isRequired,
 };
-
