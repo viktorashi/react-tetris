@@ -10,31 +10,28 @@ import states from '../../control/states';
 
 const t = setTimeout;
 
-export default class Matrix extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      clearLines: false,
-      animateColor: 2,
-      isOver: false,
-      overState: null,
-    };
-  }
-  componentWillReceiveProps(nextProps = {}) {
+export default function Matrix({matrix, cur, props}) {
+  const [clearLines, setClearLines] = React.useState(false);
+  const [animateColor, setAnimateColor] = React.useState(2);
+  const [isOver, setIsOver] = React.useState(false);
+  const [overState, setOverState] = React.useState(null);
+
+  function componentWillReceiveProps(nextProps = {}) {
     const clears = isClear(nextProps.matrix);
     const overs = nextProps.reset;
     this.setState({
       clearLines: clears,
       isOver: overs,
     });
-    if (clears && !this.state.clearLines) {
-      this.clearAnimate(clears);
+    if (clears && !clearLines) {
+      clearAnimate(clears);
     }
-    if (!clears && overs && !this.state.isOver) {
-      this.over(nextProps);
+    if (!clears && overs && !isOver) {
+      over(nextProps);
     }
   }
-  shouldComponentUpdate(nextProps = {}) { // 使用Immutable 比较两个List 是否相等
+
+  function shouldComponentUpdate(nextProps = {}) { // 使用Immutable 比较两个List 是否相等
     const props = this.props;
     return !(
       immutable.is(nextProps.matrix, props.matrix) &&
@@ -46,18 +43,19 @@ export default class Matrix extends React.Component {
         (nextProps.cur && nextProps.cur.xy),
         (props.cur && props.cur.xy)
       )
-    ) || this.state.clearLines
-    || this.state.isOver;
+    ) || clearLines
+    || isOver;
   }
-  getResult(props = this.props) {
+
+  function getResult(props = this.props) {
     const cur = props.cur;
     const shape = cur && cur.shape;
     const xy = cur && cur.xy;
 
     let matrix = props.matrix;
-    const clearLines = this.state.clearLines;
+    const clearLines = clearLines;
     if (clearLines) {
-      const animateColor = this.state.animateColor;
+      const animateColor = animateColor;
       clearLines.forEach((index) => {
         matrix = matrix.set(index, List([
           animateColor,
@@ -91,16 +89,13 @@ export default class Matrix extends React.Component {
     }
     return matrix;
   }
-  clearAnimate() {
+
+  function clearAnimate() {
     const anima = (callback) => {
       t(() => {
-        this.setState({
-          animateColor: 0,
-        });
+        setAnimateColor(0);
         t(() => {
-          this.setState({
-            animateColor: 2,
-          });
+          setAnimateColor(2);
           if (typeof callback === 'function') {
             callback();
           }
@@ -111,14 +106,15 @@ export default class Matrix extends React.Component {
       anima(() => {
         anima(() => {
           t(() => {
-            states.clearLines(this.props.matrix, this.state.clearLines);
+            states.clearLines(matrix, clearLines);
           }, 100);
         });
       });
     });
   }
-  over(nextProps) {
-    let overState = this.getResult(nextProps);
+
+  function over(nextProps) {
+    let overState = getResult(nextProps);
     this.setState({
       overState,
     });
@@ -141,12 +137,12 @@ export default class Matrix extends React.Component {
       t(exLine.bind(null, i), 40 * (i + 1));
     }
   }
-  render() {
-    let matrix;
-    if (this.state.isOver) {
-      matrix = this.state.overState;
+
+  let matrix;
+    if (isOver) {
+      matrix = overState;
     } else {
-      matrix = this.getResult();
+      matrix = getResult();
     }
     return (
       <div className={style.matrix}>{
@@ -164,7 +160,6 @@ export default class Matrix extends React.Component {
       }
       </div>
     );
-  }
 }
 
 Matrix.propTypes = {

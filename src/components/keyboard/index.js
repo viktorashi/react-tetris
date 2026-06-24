@@ -8,8 +8,10 @@ import store from '../../store';
 import todo from '../../control/todo';
 import { i18n, lan } from '../../unit/const';
 
-export default class Keyboard extends React.Component {
-  componentDidMount() {
+export default function Keyboard({keyboard, filling}) {
+  React.useEffect(() => {
+    let touchEventCatch;
+    let mouseDownEventCatch;
     const touchEventCatch = {}; // 对于手机操作, 触发了touchstart, 将作出记录, 不再触发后面的mouse事件
 
     // 在鼠标触发mousedown时, 移除元素时可以不触发mouseup, 这里做一个兼容, 以mouseout模拟mouseup
@@ -69,17 +71,18 @@ export default class Keyboard extends React.Component {
         todo[key].up(store);
       }, true);
     });
+  }, []);
+
+  function shouldComponentUpdate({ keyboard, filling }) {
+    return !Immutable.is(keyboard, keyboard) || filling !== filling;
   }
-  shouldComponentUpdate({ keyboard, filling }) {
-    return !Immutable.is(keyboard, this.props.keyboard) || filling !== this.props.filling;
-  }
-  render() {
-    const keyboard = this.props.keyboard;
+
+  const keyboard = keyboard;
     return (
       <div
         className={style.keyboard}
         style={{
-          marginTop: 20 + this.props.filling,
+          marginTop: 20 + filling,
         }}
       >
         <Button
@@ -91,7 +94,7 @@ export default class Keyboard extends React.Component {
           arrow="translate(0, 63px)"
           position
           active={keyboard.get('rotate')}
-          ref={(c) => { this.dom_rotate = c; }}
+          ref={(c) => { dom_rotate = c; }}
         />
         <Button
           color="blue"
@@ -101,7 +104,7 @@ export default class Keyboard extends React.Component {
           label={i18n.down[lan]}
           arrow="translate(0,-71px) rotate(180deg)"
           active={keyboard.get('down')}
-          ref={(c) => { this.dom_down = c; }}
+          ref={(c) => { dom_down = c; }}
         />
         <Button
           color="blue"
@@ -111,7 +114,7 @@ export default class Keyboard extends React.Component {
           label={i18n.left[lan]}
           arrow="translate(60px, -12px) rotate(270deg)"
           active={keyboard.get('left')}
-          ref={(c) => { this.dom_left = c; }}
+          ref={(c) => { dom_left = c; }}
         />
         <Button
           color="blue"
@@ -121,7 +124,7 @@ export default class Keyboard extends React.Component {
           label={i18n.right[lan]}
           arrow="translate(-60px, -12px) rotate(90deg)"
           active={keyboard.get('right')}
-          ref={(c) => { this.dom_right = c; }}
+          ref={(c) => { dom_right = c; }}
         />
         <Button
           color="blue"
@@ -130,7 +133,7 @@ export default class Keyboard extends React.Component {
           left={52}
           label={`${i18n.drop[lan]} (SPACE)`}
           active={keyboard.get('drop')}
-          ref={(c) => { this.dom_space = c; }}
+          ref={(c) => { dom_space = c; }}
         />
         <Button
           color="red"
@@ -139,7 +142,7 @@ export default class Keyboard extends React.Component {
           left={196}
           label={`${i18n.reset[lan]}(R)`}
           active={keyboard.get('reset')}
-          ref={(c) => { this.dom_r = c; }}
+          ref={(c) => { dom_r = c; }}
         />
         <Button
           color="green"
@@ -148,7 +151,7 @@ export default class Keyboard extends React.Component {
           left={106}
           label={`${i18n.sound[lan]}(S)`}
           active={keyboard.get('music')}
-          ref={(c) => { this.dom_s = c; }}
+          ref={(c) => { dom_s = c; }}
         />
         <Button
           color="green"
@@ -157,11 +160,10 @@ export default class Keyboard extends React.Component {
           left={16}
           label={`${i18n.pause[lan]}(P)`}
           active={keyboard.get('pause')}
-          ref={(c) => { this.dom_p = c; }}
+          ref={(c) => { dom_p = c; }}
         />
       </div>
     );
-  }
 }
 
 Keyboard.propTypes = {

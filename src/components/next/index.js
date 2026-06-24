@@ -19,23 +19,22 @@ const empty = [
   [0, 0, 0, 0],
 ];
 
-export default class Next extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      block: empty,
-    };
+export default function Next({data}) {
+  const [block, setBlock] = React.useState(empty);
+
+  function componentWillMount() {
+    build(data);
   }
-  componentWillMount() {
-    this.build(this.props.data);
+
+  function componentWillReceiveProps(nextProps) {
+    build(nextProps.data);
   }
-  componentWillReceiveProps(nextProps) {
-    this.build(nextProps.data);
+
+  function shouldComponentUpdate(nextProps) {
+    return nextProps.data !== data;
   }
-  shouldComponentUpdate(nextProps) {
-    return nextProps.data !== this.props.data;
-  }
-  build(type) {
+
+  function build(type) {
     const shape = blockShape[type];
     const block = empty.map(e => ([...e]));
     shape.forEach((m, k1) => {
@@ -47,11 +46,11 @@ export default class Next extends React.Component {
     });
     this.setState({ block });
   }
-  render() {
-    return (
+
+  return (
       <div className={style.next}>
         {
-          this.state.block.map((arr, k1) => (
+          block.map((arr, k1) => (
             <div key={k1}>
               {
                 arr.map((e, k2) => (
@@ -63,7 +62,6 @@ export default class Next extends React.Component {
         }
       </div>
     );
-  }
 }
 
 Next.propTypes = {

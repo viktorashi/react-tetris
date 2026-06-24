@@ -8,25 +8,24 @@ const DF = i18n.point[lan];
 const ZDF = i18n.highestScore[lan];
 const SLDF = i18n.lastRound[lan];
 
-export default class Point extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      label: '',
-      number: 0,
-    };
+export default function Point({cur, point, max, props}) {
+  const [label, setLabel] = React.useState('');
+  const [number, setNumber] = React.useState(0);
+
+  function componentWillMount() {
+    onChange(this.props);
   }
-  componentWillMount() {
-    this.onChange(this.props);
+
+  function componentWillReceiveProps(nextProps) {
+    onChange(nextProps);
   }
-  componentWillReceiveProps(nextProps) {
-    this.onChange(nextProps);
-  }
-  shouldComponentUpdate({ cur, point, max }) {
+
+  function shouldComponentUpdate({ cur, point, max }) {
     const props = this.props;
     return cur !== props.cur || point !== props.point || max !== props.max || !props.cur;
   }
-  onChange({ cur, point, max }) {
+
+  function onChange({ cur, point, max }) {
     clearInterval(Point.timeout);
     if (cur) { // 在游戏进行中
       this.setState({
@@ -58,14 +57,13 @@ export default class Point extends React.Component {
       }
     }
   }
-  render() {
-    return (
+
+  return (
       <div>
-        <p>{ this.state.label }</p>
-        <Number number={this.state.number} />
+        <p>{ label }</p>
+        <Number number={number} />
       </div>
     );
-  }
 }
 
 Point.statics = {

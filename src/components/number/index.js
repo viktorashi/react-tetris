@@ -19,16 +19,12 @@ const formate = (num) => (
 );
 
 
-export default class Number extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      time_count: false,
-      time: new Date(),
-    };
-  }
-  componentWillMount() {
-    if (!this.props.time) {
+export default function Number({time, number, length}) {
+  const [time_count, setTime_count] = React.useState(false);
+  const [time, setTime] = React.useState(new Date());
+
+  function componentWillMount() {
+    if (!time) {
       return;
     }
     const clock = () => {
@@ -43,27 +39,22 @@ export default class Number extends React.Component {
     };
     clock();
   }
-  shouldComponentUpdate({ number }) {
-    if (this.props.time) { // 右下角时钟
-      if (this.state.time_count !== Number.time_count) {
-        if (this.state.time_count !== false) {
-          Number.time_count = this.state.time_count; // 记录clock上一次的缓存
+
+  function shouldComponentUpdate({ number }) {
+    if (time) { // 右下角时钟
+      if (time_count !== Number.time_count) {
+        if (time_count !== false) {
+          Number.time_count = time_count; // 记录clock上一次的缓存
         }
         return true;
       }
       return false; // 经过判断这次的时间已经渲染, 返回false
     }
-    return this.props.number !== number;
+    return number !== number;
   }
-  componentWillUnmount() {
-    if (!this.props.time) {
-      return;
-    }
-    clearTimeout(Number.timeInterval);
-  }
-  render() {
-    if (this.props.time) { // 右下角时钟
-      const now = this.state.time;
+
+  if (time) { // 右下角时钟
+      const now = time;
       const hour = formate(now.getHours());
       const min = formate(now.getMinutes());
       const sec = now.getSeconds() % 2;
@@ -71,12 +62,11 @@ export default class Number extends React.Component {
       return (render(t));
     }
 
-    const num = `${this.props.number}`.split('');
-    for (let i = 0, len = this.props.length - num.length; i < len; i++) {
+    const num = `${number}`.split('');
+    for (let i = 0, len = length - num.length; i < len; i++) {
       num.unshift('n');
     }
     return (render(num));
-  }
 }
 
 Number.statics = {

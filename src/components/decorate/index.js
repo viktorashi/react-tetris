@@ -4,12 +4,12 @@ import cn from 'classnames';
 import { i18n, lan } from '../../unit/const';
 import style from './index.less';
 
-export default class Decorate extends React.Component {
-  shouldComponentUpdate() {
+export default function Decorate() {
+  function shouldComponentUpdate() {
     return false;
   }
-  render() {
-    return (
+
+  return (
       <div className={style.decorate}>
         <div className={style.topBorder}>
           <span className={cn(['l', style.mr])} style={{ width: 40 }} />
@@ -122,5 +122,4 @@ export default class Decorate extends React.Component {
         </div>
       </div>
     );
-  }
 }
