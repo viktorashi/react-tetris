@@ -18,70 +18,49 @@ const formate = (num) => (
   num < 10 ? `0${num}`.split('') : `${num}`.split('')
 );
 
+function Number({ time, number, length }) {
+  const [currentTime, setCurrentTime] = React.useState(new Date());
 
-export default class Number extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      time_count: false,
-      time: new Date(),
-    };
-  }
-  componentWillMount() {
-    if (!this.props.time) {
-      return;
+  React.useEffect(() => {
+    if (!time) {
+      return undefined;
     }
     const clock = () => {
-      const count = +Number.timeInterval;
       Number.timeInterval = setTimeout(() => {
-        this.setState({
-          time: new Date(),
-          time_count: count, // 用来做 shouldComponentUpdate 优化
-        });
+        setCurrentTime(new Date());
         clock();
       }, 1000);
     };
     clock();
-  }
-  shouldComponentUpdate({ number }) {
-    if (this.props.time) { // 右下角时钟
-      if (this.state.time_count !== Number.time_count) {
-        if (this.state.time_count !== false) {
-          Number.time_count = this.state.time_count; // 记录clock上一次的缓存
-        }
-        return true;
+    return () => {
+      if (Number.timeInterval) {
+        clearTimeout(Number.timeInterval);
+        Number.timeInterval = null;
       }
-      return false; // 经过判断这次的时间已经渲染, 返回false
-    }
-    return this.props.number !== number;
-  }
-  componentWillUnmount() {
-    if (!this.props.time) {
-      return;
-    }
-    clearTimeout(Number.timeInterval);
-  }
-  render() {
-    if (this.props.time) { // 右下角时钟
-      const now = this.state.time;
-      const hour = formate(now.getHours());
-      const min = formate(now.getMinutes());
-      const sec = now.getSeconds() % 2;
-      const t = hour.concat(sec ? 'd' : 'd_c', min);
-      return (render(t));
-    }
+    };
+  }, [time]);
 
-    const num = `${this.props.number}`.split('');
-    for (let i = 0, len = this.props.length - num.length; i < len; i++) {
-      num.unshift('n');
-    }
-    return (render(num));
+  if (time) { // 右下角时钟
+    const now = currentTime;
+    const hour = formate(now.getHours());
+    const min = formate(now.getMinutes());
+    const sec = now.getSeconds() % 2;
+    const t = hour.concat(sec ? 'd' : 'd_c', min);
+    return render(t);
   }
+
+  const num = `${number}`.split('');
+  for (let i = 0, len = length - num.length; i < len; i++) {
+    num.unshift('n');
+  }
+  return render(num);
 }
+
+export default Number;
 
 Number.statics = {
   timeInterval: null,
-  time_count: null,
+  timeCount: null,
 };
 
 Number.propTypes = {
