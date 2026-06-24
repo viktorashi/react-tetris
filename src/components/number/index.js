@@ -24,7 +24,7 @@ export default function Number({ time: timeDisplay, number, length }) {
 
   React.useEffect(() => {
     if (!timeDisplay) {
-      return;
+      return undefined;
     }
     const clock = () => {
       const count = Number.timeInterval;
